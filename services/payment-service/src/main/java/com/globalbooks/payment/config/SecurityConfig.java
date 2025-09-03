@@ -2,6 +2,7 @@ package com.globalbooks.payment.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile; // FIXED: add profile to toggle dev/prod security
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 public class SecurityConfig {
 
     @Bean
+    @Profile("!dev") // FIXED: keep strict OAuth2/JWT in non-dev profiles
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authz -> authz
@@ -29,6 +31,17 @@ public class SecurityConfig {
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
             );
 
+        return http.build();
+    }
+
+    @Bean
+    @Profile("dev") // FIXED: relax security in dev to avoid real issuer/JWK dependency
+    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authz -> authz
+                .anyRequest().permitAll()
+            )
+            .csrf(csrf -> csrf.disable());
         return http.build();
     }
 

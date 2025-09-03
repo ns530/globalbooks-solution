@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FIXED: Structured JSON logging with correlationId propagation.
+  - Uses logstash-logback-encoder for JSON logs (see pom.xml dependency).
+  - Includes MDC fields: correlationId, trace/span ids if present.
+  - Console appender only for demo; production can add file/ELK appender.
+-->
+<configuration scan="true">
+
+  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="payment-service"/>
+
+  <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"service":"${appName}"}</customFields>
+      <includeMdcKeyName>correlationId</includeMdcKeyName>
+      <includeMdcKeyName>traceId</includeMdcKeyName>
+      <includeMdcKeyName>spanId</includeMdcKeyName>
+      <includeContext>false</includeContext>
+    </encoder>
+  </appender>
+
+  <!-- FIXED: Reduce Spring Security noise while keeping useful info -->
+  <logger name="org.springframework.security" level="INFO"/>
+
+  <root level="INFO">
+    <appender-ref ref="JSON_CONSOLE"/>
+  </root>
+</configuration>

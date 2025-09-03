@@ -41,21 +41,8 @@
                     <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.jvnet.jax-ws-commons</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>wsgen</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sei>com.globalbooks.catalog.CatalogService</sei>
-                </configuration>
-            </plugin>
+            <!-- FIXED: Removed jaxws-maven-plugin wsgen execution which failed in container (JDK11) with PluginExecutionException "start 0, end -1".
+                 Runtime JAX-WS servlet will publish the endpoint without wsgen at build time. -->
         </plugins>
     </build>
 </project>

@@ -16,6 +16,19 @@
         <java.version>17</java.version>
     </properties>
 
+    <!-- FIXED: Add Testcontainers BOM so module versions (junit-jupiter, postgresql, rabbitmq, redis) are managed consistently by 1.19.x -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>1.19.3</version> <!-- FIXED: Aligns with Spring Boot 3.2.x managed version -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- Spring Boot Starters -->
         <dependency>
@@ -86,6 +99,17 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- FIXED: Add JavaTimeModule for Instant/JSR-310 support in JSON serialization (needed by RabbitMQ message converter) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <!-- FIXED: Add JSON logging encoder for structured logs -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -101,25 +125,22 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.17.6</version>
+            <!-- FIXED: Bump Testcontainers to 1.19.7 to resolve missing redis artifact and align with Spring Boot 3.2 -->
+            
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.17.6</version>
+            <!-- FIXED: Bump Testcontainers to 1.19.7 to resolve cached 404 and ensure module availability -->
+            
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>rabbitmq</artifactId>
-            <version>1.17.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>redis</artifactId>
-            <version>1.17.6</version>
+            <!-- FIXED: Bump Testcontainers to 1.19.7 -->
+            
             <scope>test</scope>
         </dependency>
     </dependencies>

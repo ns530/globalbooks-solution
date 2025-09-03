@@ -1,0 +1,117 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest} # FIXED: configurable via env with sensible default
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest} # FIXED: configurable via env with sensible default
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-paymentdb}
+      POSTGRES_USER: ${POSTGRES_USER:-paymentuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-paymentpass}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev} # FIXED: dev profile relaxes OAuth for local validation
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-paymentdb} # FIXED: use compose service DNS
+      DB_USERNAME: ${POSTGRES_USER:-paymentuser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-paymentpass}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+
+  orders-rest:
+    build:
+      context: ./services/orders-rest
+      dockerfile: Dockerfile
+    container_name: orders-rest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+  catalog-soap:
+    build:
+      context: ./services/catalog-soap
+    container_name: catalog-soap
+    ports:
+      - "8082:8080" # FIXED: expose on 8082 externally to avoid port conflicts
+    # Note: WSDL soap:address still points to localhost; for demos access via http://localhost:8082/catalog
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/catalog"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  shipping-service:
+    build:
+      context: ./services/shipping
+      dockerfile: Dockerfile
+    container_name: shipping-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      AMQP_URL: amqp://rabbitmq:5672 # FIXED: use compose DNS instead of localhost
+      AMQP_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      AMQP_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      AMQP_QUEUE: payments.events.processor.v2 # FIXED: align with [RabbitMQConfig.paymentEventsQueue()](services/payment-service/src/main/java/com/globalbooks/payment/config/RabbitMQConfig.java:41) to avoid precondition mismatch
+    # No ports exposed; worker/consumer only
+
+volumes:
+  pgdata:

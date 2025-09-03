@@ -5,9 +5,14 @@ import com.globalbooks.payment.dto.PaymentResponse;
 import com.globalbooks.payment.entity.Payment;
 import com.globalbooks.payment.entity.PaymentStatus;
 import com.globalbooks.payment.repository.PaymentRepository;
+import com.globalbooks.payment.config.RabbitMQConfig; // FIXED: Align routing keys with declared RabbitMQ topology
+import com.globalbooks.payment.dto.PaymentEvent; // FIXED: publish DTO without Instant to avoid Jackson conversion issues
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC; // FIXED: use MDC to propagate correlationId from HTTP context to messaging
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.core.MessagePostProcessor; // FIXED: allow setting headers (correlationId) on outbound events
+import org.springframework.amqp.core.MessageProperties; // FIXED: set content type header to application/json
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -80,12 +85,12 @@ public class PaymentService {
                 payment = paymentRepository.save(payment);
 
                 // Publish event
-                publishPaymentEvent("payment.completed", payment);
+                publishPaymentEvent(RabbitMQConfig.PAYMENT_COMPLETED_ROUTING_KEY, payment); // FIXED: use consistent routing key
                 logger.info("Payment {} completed successfully", payment.getId());
             } else {
                 payment.setStatus(PaymentStatus.FAILED);
                 payment = paymentRepository.save(payment);
-                publishPaymentEvent("payment.failed", payment);
+                publishPaymentEvent(RabbitMQConfig.PAYMENT_FAILED_ROUTING_KEY, payment); // FIXED: use consistent routing key
                 logger.warn("Payment {} failed", payment.getId());
             }
 
@@ -118,7 +123,7 @@ public class PaymentService {
         payment.setStatus(PaymentStatus.REFUNDED);
         payment = paymentRepository.save(payment);
 
-        publishPaymentEvent("payment.refunded", payment);
+        publishPaymentEvent(RabbitMQConfig.PAYMENT_REFUNDED_ROUTING_KEY, payment); // FIXED: use consistent routing key
         return mapToResponse(payment);
     }
 
@@ -138,15 +143,26 @@ public class PaymentService {
             if ("completed".equals(status) && p.getStatus() == PaymentStatus.PENDING) {
                 p.setStatus(PaymentStatus.COMPLETED);
                 paymentRepository.save(p);
-                publishPaymentEvent("payment.completed", p);
+                publishPaymentEvent(RabbitMQConfig.PAYMENT_COMPLETED_ROUTING_KEY, p); // FIXED: use consistent routing key
             }
         }
     }
 
     private void publishPaymentEvent(String routingKey, Payment payment) {
-        // Publish with publisher confirms
-        rabbitTemplate.convertAndSend("globalbooks.events", routingKey, payment);
-        logger.info("Published event {} for payment {}", routingKey, payment.getId());
+        // FIXED: add correlationId header and JSON content-type for downstream services; preserve publisher confirms
+        String correlationId = java.util.Optional.ofNullable(MDC.get("correlationId"))
+                .orElse(UUID.randomUUID().toString()); // FIXED: prefer existing correlationId from MDC, fallback to new
+        MessagePostProcessor mpp = message -> {
+            MessageProperties props = message.getMessageProperties();
+            props.setContentType(MessageProperties.CONTENT_TYPE_JSON); // FIXED: explicit content-type for consumers
+            props.setHeader("correlationId", correlationId); // FIXED: propagate correlation id
+            props.setHeader("eventType", routingKey); // FIXED: event-type header to assist routing/observability
+            return message;
+        };
+        // FIXED: publish PaymentEvent DTO to avoid JavaTime (Instant) serialization issues
+        PaymentEvent event = PaymentEvent.from(payment);
+        rabbitTemplate.convertAndSend("globalbooks.events", routingKey, event, mpp);
+        logger.info("Published event {} for payment {} with correlationId={}", routingKey, payment.getId(), correlationId);
     }
 
     private PaymentResponse mapToResponse(Payment payment) {

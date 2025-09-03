@@ -1,6 +1,9 @@
 -- Create payments table for PaymentService
 -- Rationale: Stores payment transactions with idempotency and provider integration support
 
+-- FIXED: Ensure pgcrypto is available for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID NOT NULL,
