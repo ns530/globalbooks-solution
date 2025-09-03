@@ -1,0 +1,45 @@
+{
+  "info": {
+    "name": "OrdersService Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Jane Smith\", \"items\": [{\"bookId\": 1, \"bookTitle\": \"Java Programming\", \"quantity\": 2, \"price\": 29.99}], \"totalPrice\": 59.98}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["orders"]
+        }
+      }
+    },
+    {
+      "name": "Get Order by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/orders/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["orders", "1"]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project xmlns:con="http://eviware.com/soapui/config" activeEnvironment="Default" name="CatalogService_TestProject" resourceRoot="${projectDir}" soapui-version="5.5.0">
+    <con:settings>
+        <con:setting id="GlobalPropertiesSettings">true</con:setting>
+    </con:settings>
+    <con:interface endpoint="http://localhost:8080/catalog" name="CatalogService" type="wsdl" wadlVersion="http://wadl.dev.java.net/2009/02">
+        <con:settings/>
+        <con:definition>http://localhost:8080/catalog?wsdl</con:definition>
+        <con:operation isOneWay="false" name="getBookById">
+            <con:settings/>
+            <con:call name="Request 1">
+                <con:settings/>
+                <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:getBookByIdRequest>
+         <cat:id>1</cat:id>
+      </cat:getBookByIdRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+                <con:response/>
+            </con:call>
+        </con:operation>
+        <con:operation isOneWay="false" name="getBooksByCategory">
+            <con:settings/>
+            <con:call name="Request 1">
+                <con:settings/>
+                <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:getBooksByCategoryRequest>
+         <cat:category>Technology</cat:category>
+      </cat:getBooksByCategoryRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+                <con:response/>
+            </con:call>
+        </con:operation>
+    </con:interface>
+    <con:testSuite name="CatalogTestSuite">
+        <con:settings/>
+        <con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="GetBookById_TestCase" searchProperties="true">
+            <con:settings/>
+            <con:testStep type="wsdl" name="getBookById">
+                <con:settings/>
+                <con:config xsi:type="con:WsdlRequestConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:interface>CatalogService</con:interface>
+                    <con:operation>getBookById</con:operation>
+                    <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:getBookByIdRequest>
+         <cat:id>1</cat:id>
+      </cat:getBookByIdRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+                </con:config>
+            </con:testStep>
+            <con:assertions>
+                <con:assertion xsi:type="con:SoapResponseAssertionConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:name>SOAP Response</con:name>
+                </con:assertion>
+                <con:assertion xsi:type="con:XPathMatchAssertionConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:name>XPath Match</con:name>
+                    <con:path>//book/title</con:path>
+                    <con:expectedContent>Java Programming</con:expectedContent>
+                </con:assertion>
+            </con:assertions>
+        </con:testCase>
+        <con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="GetBooksByCategory_TestCase" searchProperties="true">
+            <con:settings/>
+            <con:testStep type="wsdl" name="getBooksByCategory">
+                <con:settings/>
+                <con:config xsi:type="con:WsdlRequestConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:interface>CatalogService</con:interface>
+                    <con:operation>getBooksByCategory</con:operation>
+                    <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:getBooksByCategoryRequest>
+         <cat:category>Technology</cat:category>
+      </cat:getBooksByCategoryRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+                </con:config>
+            </con:testStep>
+            <con:assertions>
+                <con:assertion xsi:type="con:SoapResponseAssertionConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:name>SOAP Response</con:name>
+                </con:assertion>
+                <con:assertion xsi:type="con:XPathMatchAssertionConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <con:name>XPath Match</con:name>
+                    <con:path>count(//book)</con:path>
+                    <con:expectedContent>2</con:expectedContent>
+                </con:assertion>
+            </con:assertions>
+        </con:testCase>
+    </con:testSuite>
+</con:soapui-project>

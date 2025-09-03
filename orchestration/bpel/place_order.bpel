@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process name="PlaceOrderProcess"
+         targetNamespace="http://globalbooks.com/placeorder"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:tns="http://globalbooks.com/placeorder"
+         xmlns:cat="http://globalbooks.com/catalog"
+         xmlns:ord="http://globalbooks.com/orders">
+
+    <!-- Partner Links: Define interactions with services -->
+    <partnerLinks>
+        <partnerLink name="CatalogServicePL" partnerLinkType="tns:CatalogPLT" partnerRole="CatalogService"/>
+        <partnerLink name="OrdersServicePL" partnerLinkType="tns:OrdersPLT" partnerRole="OrdersService"/>
+        <partnerLink name="ClientPL" partnerLinkType="tns:ClientPLT" myRole="PlaceOrderProcess"/>
+    </partnerLinks>
+
+    <!-- Variables: For message exchange -->
+    <variables>
+        <variable name="orderRequest" messageType="tns:OrderRequestMessage"/>
+        <variable name="orderResponse" messageType="tns:OrderResponseMessage"/>
+        <variable name="catalogRequest" messageType="cat:getBookByIdRequest"/>
+        <variable name="catalogResponse" messageType="cat:getBookByIdResponse"/>
+    </variables>
+
+    <!-- Sequence: Main process flow -->
+    <sequence>
+        <!-- Receive order request from client -->
+        <receive partnerLink="ClientPL" portType="tns:PlaceOrderPT" operation="placeOrder"
+                 variable="orderRequest" createInstance="yes"/>
+
+        <!-- Invoke CatalogService to get book details -->
+        <invoke partnerLink="CatalogServicePL" portType="cat:CatalogPortType" operation="getBookById"
+                inputVariable="catalogRequest" outputVariable="catalogResponse"/>
+
+        <!-- Invoke OrdersService to create order -->
+        <invoke partnerLink="OrdersServicePL" portType="ord:OrdersPortType" operation="createOrder"
+                inputVariable="orderRequest" outputVariable="orderResponse"/>
+
+        <!-- Reply to client with order confirmation -->
+        <reply partnerLink="ClientPL" portType="tns:PlaceOrderPT" operation="placeOrder"
+               variable="orderResponse"/>
+    </sequence>
+</process>

@@ -1,0 +1,13 @@
+Explanation for Tasks 10-11: Integration and Error-Handling Strategy
+
+Integration:
+- PaymentsService and ShippingService consume messages from RabbitMQ queues.
+- OrdersService publishes to orders_exchange with routing keys (e.g., order.payment for payments, order.shipping for shipping).
+- Producers: OrdersService sends order details asynchronously.
+- Consumers: PaymentsService processes payment, ShippingService handles shipment.
+
+Error-Handling and Dead-Letter Routing:
+- Queues have TTL (60 seconds) and dead-letter exchange.
+- Failed messages (e.g., payment declined) are routed to dead_letter_queue for manual review.
+- Strategy: Retry with exponential backoff, log errors, alert admins for critical failures.
+- Ensures reliability in async messaging, preventing message loss during service outages.

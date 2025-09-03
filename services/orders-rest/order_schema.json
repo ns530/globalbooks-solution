@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customerName": {
+      "type": "string",
+      "description": "Name of the customer placing the order"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "bookId": {
+            "type": "integer",
+            "description": "ID of the book"
+          },
+          "bookTitle": {
+            "type": "string",
+            "description": "Title of the book"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Quantity of the book"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price per unit"
+          }
+        },
+        "required": ["bookId", "quantity", "price"]
+      },
+      "description": "List of order items"
+    },
+    "totalPrice": {
+      "type": "number",
+      "description": "Total price of the order"
+    }
+  },
+  "required": ["customerName", "items"]
+}
