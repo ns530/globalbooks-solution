@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="faeceac8-71b0-4632-bc75-01de8351f5a4" activeEnvironment="Default" name="Catalog-SOAP" resourceRoot="" soapui-version="5.9.0" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="25799b7f-357b-4d42-9387-ffd09067aa0b" wsaVersion="NONE" name="CatalogBinding" type="wsdl" bindingName="{http://globalbooks.com/catalog}CatalogBinding" soapVersion="1_1" anonymous="optional" definition="file:/D:/Web/globalbooks-solution/design/catalog_service.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:\D:\Web\globalbooks-solution\design\catalog_service.wsdl"><con:part><con:url>file:\D:\Web\globalbooks-solution\design\catalog_service.wsdl</con:url><con:content><![CDATA[<definitions targetNamespace="http://globalbooks.com/catalog" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://globalbooks.com/catalog" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <types>
+    <xsd:schema targetNamespace="http://globalbooks.com/catalog" elementFormDefault="qualified">
+      <xsd:complexType name="Book">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:int"/>
+          <xsd:element name="title" type="xsd:string"/>
+          <xsd:element name="author" type="xsd:string"/>
+          <xsd:element name="price" type="xsd:decimal"/>
+          <xsd:element name="category" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="getBookByIdRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="getBookByIdResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="book" type="tns:Book" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="getBooksByCategoryRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="category" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="getBooksByCategoryResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="books" type="tns:Book" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+  <message name="getBookByIdRequest">
+    <part name="parameters" element="tns:getBookByIdRequest"/>
+  </message>
+  <message name="getBookByIdResponse">
+    <part name="parameters" element="tns:getBookByIdResponse"/>
+  </message>
+  <message name="getBooksByCategoryRequest">
+    <part name="parameters" element="tns:getBooksByCategoryRequest"/>
+  </message>
+  <message name="getBooksByCategoryResponse">
+    <part name="parameters" element="tns:getBooksByCategoryResponse"/>
+  </message>
+  <portType name="CatalogPortType">
+    <operation name="getBookById">
+      <input message="tns:getBookByIdRequest"/>
+      <output message="tns:getBookByIdResponse"/>
+    </operation>
+    <operation name="getBooksByCategory">
+      <input message="tns:getBooksByCategoryRequest"/>
+      <output message="tns:getBooksByCategoryResponse"/>
+    </operation>
+  </portType>
+  <binding name="CatalogBinding" type="tns:CatalogPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="getBookById">
+      <soap:operation soapAction="getBookById"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="getBooksByCategory">
+      <soap:operation soapAction="getBooksByCategory"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="CatalogService">
+    <port name="CatalogPort" binding="tns:CatalogBinding">
+      <soap:address location="http://localhost:8080/catalog-soap/catalog"/>
+    </port>
+  </service>
+</definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8080/catalog-soap/catalog</con:endpoint></con:endpoints><con:operation id="4f78bc33-3664-4d17-b4f4-a8fe9cd45b7f" isOneWay="false" action="getBookById" name="getBookById" bindingOperationName="getBookById" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="da9b1e05-17ae-434c-a977-750a5d033f82" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/catalog-soap/catalog</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <cat:getBookByIdRequest>\r
+         <cat:id>?</cat:id>\r
+      </cat:getBookByIdRequest>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="getBookById"/></con:call></con:operation><con:operation id="f85c56d5-b5cd-4082-a0a6-4cc8789fc1c4" isOneWay="false" action="getBooksByCategory" name="getBooksByCategory" bindingOperationName="getBooksByCategory" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="f6448748-0332-4dd4-941f-41dd3c3be87a" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/catalog-soap/catalog</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://globalbooks.com/catalog">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <cat:getBooksByCategoryRequest>\r
+         <cat:category>?</cat:category>\r
+      </cat:getBooksByCategoryRequest>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="getBooksByCategory"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>
